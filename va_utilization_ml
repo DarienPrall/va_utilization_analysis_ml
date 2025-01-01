@@ -102,3 +102,58 @@ print("The top 5 states with the lowest utilization rates are as follows: ")
 print("STATE\t\tUTILIZATION RATE")
 for index, row in top_5_lowest_utilization_rates.iterrows():
     print(f"{row['State']}\t| {row['Utilization Rate']:.2f}")
+
+#--------------------------------------------------------------------
+# Step5: MACHINE LEARNING ALGORITHM DEMO
+# - For the machine learning algorithm demo, I will be using KMeans clustering
+# - I will identify groups of states based on their ['Utilization Rate'] to identify patterns on how states utilize VA Services
+# - Here are my steps for solving this:
+# - 5.1: Identify features for clustering
+# - 5.2: Normalize the data with KMeans
+# - 5.3: Apply Clustering (KMeans) with X clusters
+# - 5.4: Show cluster centers
+# - 5.5: Visualization (plot)
+# - 5.6: Output the results
+#--------------------------------------------------------------------
+
+# - 5.1: Identify features for clustering
+cluster_features = [
+    'Total Veteran Population',
+    'Total VA Users: Veterans only',
+    'VA Health Care',
+    'Disability Compensation OR Pension',
+    'VA Home Loan Guaranty',
+    'VA Life Insurance',
+    'Education Benefits',
+    'Memorial Benefits',
+    'Vocational Rehabilitation & Employment'
+]
+
+# - 5.2: Normalization
+scaler = StandardScaler()
+data_scaled = scaler.fit_transform(data[cluster_features])
+
+# - 5.3: KMeans
+kmeans = KMeans(n_clusters = 5, random_state = 42)
+data['Clusters'] = kmeans.fit_predict(data_scaled)
+
+# - 5.4 Show Clusters
+print("Cluster Centers (average values of each cluster): ")
+#print(kmeans.cluster_centers_)
+
+# - 5.5: Vizualize
+plt.figure(figsize=(10, 6))
+plt.scatter(data['Total Veteran Population'], data['Total VA Users: Veterans only'], 
+            c=data['Clusters'], cmap='viridis', s=100, edgecolors='k', alpha=0.7)
+plt.xlabel('Total Veteran Population')
+plt.ylabel('Total VA Users: Veterans only')
+plt.title('KMeans Clustering of States based on VA Services Utilization')
+plt.colorbar(label='Cluster')
+
+plt.show()
+
+
+# - 5.6: Output Results (will print once Figure 1 is closed)
+print("\nStates with their assigned clusters:")
+for index, row in data.iterrows():
+    print(f"State: {row['State']} - Cluster: {row['Clusters']}")
