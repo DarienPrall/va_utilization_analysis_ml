@@ -16,3 +16,49 @@ from sklearn.preprocessing import StandardScaler
 #--------------------------------------------------------------------
 file_path = ('/Users/darienprall/Documents/GitHub/va_utilization/va_utilization_data.csv')
 data = pd.read_csv(file_path)
+
+#--------------------------------------------------------------------
+# Step3: DEFINE & CLEAN DATA
+# - 3.1: DEFINITIONS
+# VETERANS WHO USED MULTIPLE PROGRAMS ARE COUNTED IN EACH PROGRAM BUT ONLY ONCE IN THE TOTAL
+# THE SUM OF USERS IN EACH PROGRAM DOES NOT EQUAL TOTAL USERS
+#
+# State                                     The state of the feature data
+# Total Veteran Population                  The total count of veterans in the given state
+# Total VA Users: Veterans only             The total count of veterans utilizing the Veterans Affairs (does not include, active duty)
+# VA Health Care                            The total count of veterans enrolled into the Veterans Affairs Health Care
+# Disability Compensation OR Pension        The total count of veterans enrolled in disability compensation or pension
+# VA Home Loan Guaranty                     The total count of veterans who utilized the Veterans Affairs Home Loan Guaranty
+# VA Life Insurance                         The total count of veterans enrolled in the Veterans Affairs Life Insurance
+# Education Benefits                        The total count of veterans utilizing educational benefits
+# Memorial Benefits                         The total count of veterans utilizing memorial benefits
+# Vocational Rehabilitation & Employment    The total count of veterans utilizing vocational rehabilitation & employment benefits
+#
+#--------------------------------------------------------------------
+
+# - 3.2: CLEANING DATA
+# - 3.2.1: Place all numerical categories in an array to loop through and convert
+numerical_features = [
+    'Total Veteran Population',
+    'Total VA Users: Veterans only',
+    'VA Health Care',
+    'Disability Compensation OR Pension',
+    'VA Home Loan Guaranty',
+    'VA Life Insurance',
+    'Education Benefits',
+    'Memorial Benefits',
+    'Vocational Rehabilitation & Employment'
+]
+
+# 3.2.2: Loop through numerical_features to remove commas, whitespace, tabs and convert to_numeric
+for column in numerical_features:
+    # Remove trailing and leading whitespace
+    data[column] = data[column].str.strip()
+
+    # Remove tabs and commas
+    data[column] = data[column].replace({r'\t': '', r',': ''}, regex = True)
+
+    # Convert to_numeric
+    data[column] = pd.to_numeric(data[column], errors = 'coerce')
+
+#print(data.head())
