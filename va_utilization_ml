@@ -62,3 +62,43 @@ for column in numerical_features:
     data[column] = pd.to_numeric(data[column], errors = 'coerce')
 
 #print(data.head())
+
+#--------------------------------------------------------------------
+# Step4: SEARCH ALGORITHM DEMO (ANOMALY DETECTION)
+# - In this example, I want to determine the top 5 states in which veterans are not using the VA
+# - Here are my steps in solving this
+# - 4.1: Calculate the utilization rate for each state (Utilization Rate = Total VA Users: Veterans only / Total Veteran Population)
+# - 4.2: Apply a Z-score threshold of 2 or -2 to simplify the detection of anomalies 
+# - 4.3: Sort the data by lowest utilization rate to determine the top 5 states
+# - 4.4: Output the results
+#--------------------------------------------------------------------
+
+# - 4.1: Calculate Utilization Rate
+data['Utilization Rate'] = data['Total VA Users: Veterans only'] / data['Total Veteran Population']
+#print(data.head())
+
+# - 4.2: Z-Scores with a threshold of 2
+threshold = 2
+data['Z-Score'] = zscore(data['Utilization Rate'])
+
+# - 4.2.1: Anomaly Detection (any states > or < 2)
+anomalies = data[data['Z-Score'].abs() > 2 ]
+#print(anomalies)
+
+# - 4.2.2: Filtering out anomalies
+data_wo_anomalies = data[(data['Z-Score'] < threshold) & (data['Z-Score'] > -threshold)]
+#print(data_wo_anomalies)
+
+
+# - 4.3: Sorting the data
+data_wo_anomalies_sorted = data_wo_anomalies.sort_values(by='Utilization Rate', ascending = True)
+#print(data_wo_anomalies_sorted) 
+
+# - 4.3.1: Determining Top 5 Lowest Utilization Rates
+top_5_lowest_utilization_rates = data_wo_anomalies_sorted[['State', 'Utilization Rate']].head(5)
+
+# - 4.4: Output
+print("The top 5 states with the lowest utilization rates are as follows: ")
+print("STATE\t\tUTILIZATION RATE")
+for index, row in top_5_lowest_utilization_rates.iterrows():
+    print(f"{row['State']}\t| {row['Utilization Rate']:.2f}")
