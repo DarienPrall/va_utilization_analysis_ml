@@ -157,3 +157,85 @@ plt.show()
 print("\nStates with their assigned clusters:")
 for index, row in data.iterrows():
     print(f"State: {row['State']} - Cluster: {row['Clusters']}")
+
+
+#--------------------------------------------------------------------
+# Step6: Markov Model Demo (Probabilistic Transitions)
+# - The Markov model will be tricky to demonstrate as in needs sequential data
+# - The current data I have is a single snapshot from 2016
+# - However, I can show transitions between states based on their usage
+# - I will show the transition probabilites of the Education Benefits state of low, medium, and high
+# - 6.1: Define States (features)
+# - 6.2: Create Transition Matrix
+# - 6.3: Simulate Transitions
+# - 6.4: Visualize the output
+#--------------------------------------------------------------------
+
+# - 6.1: Define States for Education Benefits (Low, Medium, High)
+
+# - 6.1.1: Get the percentiles of Education Benefits, starting with low (33) and high (66)
+low_percentile = np.percentile(data['Education Benefits'], 33)
+high_percentile = np.percentile(data['Education Benefits'], 66)
+#print(low_percentile) #4985.36
+#print(high_percentile) #13239.12
+
+# - 6.1.2: Define the function to calcuate percentiles dynamically
+def categorize_usage(x, low_percentile, high_percentile):
+    if x < low_percentile:
+        return 'Low'
+    elif x < high_percentile:
+        return 'Medium'
+    else:
+        return 'High'
+
+# - 6.1.4: Create Usage Feature
+data['Education Benefits Usage'] = data['Education Benefits'].apply(categorize_usage, low_percentile=low_percentile, high_percentile=high_percentile)
+#print(data)
+
+# - 6.2: Creating the Transition Matrix
+
+# - 6.2.1: Define each state
+states = ['Low', 'Medium', 'High']
+
+# - 6.2.1: Initialize the matrix
+transition_matrix = pd.DataFrame(0, index = states, columns = states)
+
+# - 6.2.2: Fill in the matrix
+for i in range(len(data) -1 ):
+    current_state = data.iloc[i]['Education Benefits Usage']
+    next_state = data.iloc[i+1]['Education Benefits Usage']
+    transition_matrix.loc[current_state, next_state] +=1
+
+# - 6.2.3: Convert each count to a probability
+transition_matrix = transition_matrix.div(transition_matrix.sum(axis = 1),axis = 0)
+
+# - 6.3: Simulate Transitions
+initial_state = 'Low'
+steps = 10
+current_state = initial_state
+state_history = [current_state]
+
+for _ in range(steps):
+    transition_probabilities = transition_matrix.loc[current_state].values
+    next_state = np.random.choice(states, p = transition_probabilities)
+    state_history.append(next_state)
+    current_state = next_state
+
+# - 6.4: Output the results
+print(f"Transition Matrix:\n{transition_matrix}")
+print(f"\nSimulated States over {steps} steps:")
+print(state_history)
+
+# - 6.5: Visualize Results
+plt.figure(figsize=(10, 6))
+plt.plot(state_history, marker='o', linestyle='-', color='b')
+plt.title(f"Markov Chain Simulation for Education Benefits Usage")
+plt.xlabel('Time Steps')
+plt.ylabel('State (Low, Medium, High)')
+plt.xticks(range(steps + 1), range(steps + 1))
+plt.yticks([0, 1, 2], states)
+plt.grid(True)
+plt.show()
+
+
+
